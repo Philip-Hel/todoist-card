@@ -1,7 +1,7 @@
 import { LitElement, html, customElement, property, TemplateResult, CSSResult, css } from 'lit-element';
 import { HomeAssistant, fireEvent, LovelaceCardEditor, ActionConfig } from 'custom-card-helpers';
 
-import { BoilerplateCardConfig } from './types';
+import { TodoistCardConfig } from './types';
 
 const options = {
   required: {
@@ -44,15 +44,16 @@ const options = {
   },
 };
 
-@customElement('boilerplate-card-editor')
-export class BoilerplateCardEditor extends LitElement implements LovelaceCardEditor {
+@customElement('todoist-card-editor')
+export class TodoistCardEditor extends LitElement implements LovelaceCardEditor {
   @property() public hass?: HomeAssistant;
-  @property() private _config?: BoilerplateCardConfig;
+  @property() private _config?: TodoistCardConfig;
   @property() private _toggle?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   @property() private _helpers?: any;
   private _initialized = false;
 
-  public setConfig(config: BoilerplateCardConfig): void {
+  public setConfig(config: TodoistCardConfig): void {
     this._config = config;
 
     this.loadCardHelpers();
@@ -262,6 +263,7 @@ export class BoilerplateCardEditor extends LitElement implements LovelaceCardEdi
   }
 
   private async loadCardHelpers(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this._helpers = await (window as any).loadCardHelpers();
   }
 

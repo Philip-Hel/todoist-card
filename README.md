@@ -54,7 +54,6 @@ Clone this repository
 Install necessary modules (verified to work in node 8.x)
 `yarn install` or `npm install`
 
-
 ### Step 3
 
 Do a test lint & build on the project. You can see available scripts in the package.json
@@ -67,7 +66,6 @@ Search the repository for all instances of "TODO" and handle the changes/suggest
 ### Step 5
 
 Customize to suit your needs and contribute it back to the community
-
 
 ## Starting a new card from boilerplate-card with [devcontainer][devcontainer]
 
@@ -95,7 +93,9 @@ If you need a fresh test instance you can install a fresh Home Assistant instanc
 2. Home Assistant will install and will eventually be running on port `9123`
 
 ## [Troubleshooting](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)
+
 NB This will not work with node 9.x if you see the following errors try installing node 8.10.0
+
 ```yarn install
 yarn install v1.3.2
 [1/4] 🔍  Resolving packages...

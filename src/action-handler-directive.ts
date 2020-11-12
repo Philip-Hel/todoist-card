@@ -22,6 +22,7 @@ declare global {
 class ActionHandler extends HTMLElement implements ActionHandler {
   public holdTime = 500;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public ripple: any;
 
   protected timer?: number;
@@ -160,16 +161,16 @@ class ActionHandler extends HTMLElement implements ActionHandler {
   }
 }
 
-// TODO You need to replace all instances of "action-handler-boilerplate" with "action-handler-<your card name>"
-customElements.define('action-handler-boilerplate', ActionHandler);
+// TODO You need to replace all instances of "action-handler-todoist" with "action-handler-<your card name>"
+customElements.define('action-handler-todoist', ActionHandler);
 
 const getActionHandler = (): ActionHandler => {
   const body = document.body;
-  if (body.querySelector('action-handler-boilerplate')) {
-    return body.querySelector('action-handler-boilerplate') as ActionHandler;
+  if (body.querySelector('action-handler-todoist')) {
+    return body.querySelector('action-handler-todoist') as ActionHandler;
   }
 
-  const actionhandler = document.createElement('action-handler-boilerplate');
+  const actionhandler = document.createElement('action-handler-todoist');
   body.appendChild(actionhandler);
 
   return actionhandler as ActionHandler;
