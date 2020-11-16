@@ -13,7 +13,7 @@
   ],
   "module": "todoist-card.js",
   "repository": "git@github.com:Philip-Hel/todoist-card",
-  "author": "Philip Helberg",
+  "author": "Philip Helberg, note heavily based on Boilerplate template authors work",
   "license": "MIT",
   "dependencies": {
     "custom-card-helpers": "^1.6.3",

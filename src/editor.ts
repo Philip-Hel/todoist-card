@@ -75,6 +75,14 @@ export class TodoistCardEditor extends LitElement implements LovelaceCardEditor 
     return '';
   }
 
+  get _icon(): string {
+    if (this._config) {
+      return this._config.icon || '';
+    }
+
+    return '';
+  }
+
   get _entity(): string {
     if (this._config) {
       return this._config.entity || '';
@@ -132,7 +140,7 @@ export class TodoistCardEditor extends LitElement implements LovelaceCardEditor 
     this._helpers.importMoreInfoControl('climate');
 
     // You can restrict on domain type
-    const entities = Object.keys(this.hass.states).filter(eid => eid.substr(0, eid.indexOf('.')) === 'sun');
+    const entities = Object.keys(this.hass.states).filter(eid => eid.substr(0, eid.indexOf('.')) === 'calendar');
 
     return html`
       <div class="card-config">
@@ -233,21 +241,13 @@ export class TodoistCardEditor extends LitElement implements LovelaceCardEditor 
                   .configValue=${'name'}
                   @value-changed=${this._valueChanged}
                 ></paper-input>
+                <paper-input
+                  label="Icon mdi:something)"
+                  .value=${this._icon}
+                  .configValue=${'icon'}
+                  @value-changed=${this._valueChanged}
+                ></paper-input>
                 <br />
-                <ha-formfield .label=${`Toggle warning ${this._show_warning ? 'off' : 'on'}`}>
-                  <ha-switch
-                    .checked=${this._show_warning !== false}
-                    .configValue=${'show_warning'}
-                    @change=${this._valueChanged}
-                  ></ha-switch>
-                </ha-formfield>
-                <ha-formfield .label=${`Toggle error ${this._show_error ? 'off' : 'on'}`}>
-                  <ha-switch
-                    .checked=${this._show_error !== false}
-                    .configValue=${'show_error'}
-                    @change=${this._valueChanged}
-                  ></ha-switch>
-                </ha-formfield>
               </div>
             `
           : ''}

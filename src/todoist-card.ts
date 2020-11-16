@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, customElement, property, CSSResult, TemplateResult, css, PropertyValues } from 'lit-element';
 import {
   HomeAssistant,
   hasConfigOrEntityChanged,
-  hasAction,
+  /* hasAction, */
   ActionHandlerEvent,
   handleAction,
   LovelaceCardEditor,
@@ -13,10 +14,11 @@ import {
 import './editor';
 
 import { TodoistCardConfig } from './types';
-import { actionHandler } from './action-handler-directive';
-import { CARD_VERSION } from './const';
+/*import { actionHandler } from './action-handler-directive';*/
+import { CARD_VERSION, DEFAULT_ICON, PROJECT_COLOUR } from './const';
 
 import { localize } from './localize/localize';
+import { HassEntity } from 'home-assistant-js-websocket';
 
 /* eslint no-console: 0 */
 console.info(
@@ -57,7 +59,7 @@ export class TodoistCard extends LitElement {
     }
 
     this.config = {
-      name: 'Todoist',
+      icon: DEFAULT_ICON,
       ...config,
     };
   }
@@ -71,23 +73,122 @@ export class TodoistCard extends LitElement {
   }
 
   protected render(): TemplateResult | void {
-    // TODO Check for stateObj or other necessary things and render a warning if missing
-    if (this.config.show_warning) {
-      return this.showWarning(localize('common.show_warning'));
+    if (!this.config || !this.hass) {
+      this.showWarning(localize('Hass or Config not defined'));
     }
 
+    const stateObj = this.hass.states[this.config.entity!];
+    console.log(stateObj.attributes);
+    if (!stateObj) {
+      this.showWarning(localize('Entity not found'));
+    }
+    /**
     return html`
       <ha-card
-        .header=${this.config.name}
+        .header=${this.config.name || stateObj.attributes.friendly_name}
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
           hasHold: hasAction(this.config.hold_action),
           hasDoubleClick: hasAction(this.config.double_tap_action),
         })}
-        tabindex="0"
-        .label=${`Todoist: ${this.config.entity || 'No Entity Defined'}`}
       ></ha-card>
     `;
+     */
+    return html`
+      <ha-card>
+        ${this.renderheading(stateObj)}
+      </ha-card>
+    `;
+  }
+
+  private renderheading(stateObj: HassEntity): TemplateResult {
+    const hColor = this.convertcolour(stateObj.attributes[PROJECT_COLOUR]);
+    return html`
+      <div class="card-header">
+        <div class="name">
+          ${this.config.icon
+            ? html`
+                <ha-icon class="icon" .icon="${this.config.icon || DEFAULT_ICON}" style="color: ${hColor};"></ha-icon>
+              `
+            : ''}
+          ${this.config.name || stateObj.attributes.friendly_name}
+        </div>
+        <hr
+          class="divider"
+          style="background-image: linear-gradient(to right, ${hColor}, ${hColor}, rgba(0, 0, 0, 0));"
+        />
+      </div>
+    `;
+  }
+
+  private convertcolour(proj_colour_id: number): string {
+    let calculatedColour = '';
+    switch (proj_colour_id) {
+      case 30:
+        calculatedColour += '#b8256f';
+        break;
+      case 31:
+        calculatedColour += '#db4035';
+        break;
+      case 32:
+        calculatedColour += '#ff9933';
+        break;
+      case 33:
+        calculatedColour += '#fad000';
+        break;
+      case 34:
+        calculatedColour += '#afb83b';
+        break;
+      case 35:
+        calculatedColour += '#7ecc49';
+        break;
+      case 36:
+        calculatedColour += '#299438';
+        break;
+      case 37:
+        calculatedColour += '#6accbc';
+        break;
+      case 38:
+        calculatedColour += '#158fad';
+        break;
+      case 39:
+        calculatedColour += '#14aaf5';
+        break;
+      case 40:
+        calculatedColour += '#96c3eb';
+        break;
+      case 41:
+        calculatedColour += '#4073ff';
+        break;
+      case 42:
+        calculatedColour += '#884dff';
+        break;
+      case 43:
+        calculatedColour += '#af38eb';
+        break;
+      case 44:
+        calculatedColour += '#eb96eb';
+        break;
+      case 45:
+        calculatedColour += '#e05194';
+        break;
+      case 46:
+        calculatedColour += '#ff8d85';
+        break;
+      case 47:
+        calculatedColour += '#808080';
+        break;
+      case 48:
+        calculatedColour += '#b8b8b8';
+        break;
+      case 49:
+        calculatedColour += '#ccac93';
+        break;
+      default:
+        calculatedColour += 'white';
+        break;
+    }
+    return calculatedColour;
   }
 
   private _handleAction(ev: ActionHandlerEvent): void {
@@ -116,6 +217,32 @@ export class TodoistCard extends LitElement {
   }
 
   static get styles(): CSSResult {
-    return css``;
+    return css`
+      ha-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .card-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .card-header .name {
+        display: flex;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .card-header .name .icon {
+        margin-top: -1px;
+      }
+      .divider {
+        width: 100%;
+        border: 0;
+        height: 1.5px;
+      }
+    `;
   }
 }
