@@ -15,7 +15,15 @@ import './editor';
 
 import { TodoistCardConfig } from './types';
 /*import { actionHandler } from './action-handler-directive';*/
-import { CARD_VERSION, DEFAULT_ICON, PROJECT_COLOUR } from './const';
+import {
+  CARD_VERSION,
+  DEFAULT_ICON,
+  PROJECT_COLOUR,
+  PARENT_SUMMARY,
+  PROJECT_TASKS,
+  TASK_SUMMARY,
+  TASK_PRIORITY,
+} from './const';
 
 import { localize } from './localize/localize';
 import { HassEntity } from 'home-assistant-js-websocket';
@@ -82,6 +90,10 @@ export class TodoistCard extends LitElement {
     if (!stateObj) {
       this.showWarning(localize('Entity not found'));
     }
+
+    if (!stateObj.attributes[PROJECT_TASKS]) {
+      return html``;
+    }
     /**
     return html`
       <ha-card
@@ -96,7 +108,7 @@ export class TodoistCard extends LitElement {
      */
     return html`
       <ha-card>
-        ${this.renderheading(stateObj)}
+        ${this.renderheading(stateObj)} ${this.rendercontent(stateObj)}
       </ha-card>
     `;
   }
@@ -113,6 +125,7 @@ export class TodoistCard extends LitElement {
             : ''}
           ${this.config.name || stateObj.attributes.friendly_name}
         </div>
+        <div class="parent-summary">${stateObj.attributes[PARENT_SUMMARY]}</div>
         <hr
           class="divider"
           style="background-image: linear-gradient(to right, ${hColor}, ${hColor}, rgba(0, 0, 0, 0));"
@@ -124,6 +137,18 @@ export class TodoistCard extends LitElement {
   private convertcolour(proj_colour_id: number): string {
     let calculatedColour = '';
     switch (proj_colour_id) {
+      case 1:
+        calculatedColour += '#808080';
+        break;
+      case 2:
+        calculatedColour += '#5297ff';
+        break;
+      case 3:
+        calculatedColour += '#ff9a14';
+        break;
+      case 4:
+        calculatedColour += '#ff7066';
+        break;
       case 30:
         calculatedColour += '#b8256f';
         break;
@@ -216,6 +241,27 @@ export class TodoistCard extends LitElement {
     `;
   }
 
+  private rendercontent(stateObj: HassEntity): TemplateResult {
+    const tasks = stateObj.attributes[PROJECT_TASKS];
+    return html`
+      <div class="card-content">
+        ${tasks!.map(task => this.rendertask(task))}
+      </div>
+    `;
+  }
+
+  private rendertask(ptask): TemplateResult {
+    const lcolour = this.convertcolour(ptask[TASK_PRIORITY]);
+    return html`
+      <div class="row-task">
+        <svg class="task-icon" width="24" height="24">
+          <circle cx="12" cy="12" r="9" stroke="${lcolour}" fill="${lcolour}" fill-opacity="0.4" stroke-width="2" />
+        </svg>
+        <div class="task-summary">${ptask[TASK_SUMMARY]}</div>
+      </div>
+    `;
+  }
+
   static get styles(): CSSResult {
     return css`
       ha-card {
@@ -223,6 +269,16 @@ export class TodoistCard extends LitElement {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+      }
+      .card-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .card-content .row-task {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
       }
       .card-header {
         display: flex;
@@ -237,6 +293,10 @@ export class TodoistCard extends LitElement {
       }
       .card-header .name .icon {
         margin-top: -1px;
+      }
+      .card-header .parent-summary {
+        font-size: 14px;
+        color: var(--secondary-text-color);
       }
       .divider {
         width: 100%;

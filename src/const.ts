@@ -3,3 +3,7 @@ export const CARD_VERSION = '1.0.0';
 //export const DEFAULT_ICON = 'mdi:circle-medium';
 export const DEFAULT_ICON = 'mdi:record';
 export const PROJECT_COLOUR = 'color';
+export const PARENT_SUMMARY = 'parent_summary';
+export const PROJECT_TASKS = 'all_tasks';
+export const TASK_SUMMARY = 'summary';
+export const TASK_PRIORITY = 'priority';
