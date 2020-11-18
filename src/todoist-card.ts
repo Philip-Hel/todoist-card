@@ -244,21 +244,17 @@ export class TodoistCard extends LitElement {
   private rendercontent(stateObj: HassEntity): TemplateResult {
     const tasks = stateObj.attributes[PROJECT_TASKS];
     return html`
-      <div class="card-content">
+      <ul class="card-content">
         ${tasks!.map(task => this.rendertask(task))}
-      </div>
+      </ul>
     `;
   }
 
   private rendertask(ptask): TemplateResult {
-    const lcolour = this.convertcolour(ptask[TASK_PRIORITY]);
     return html`
-      <div class="row-task">
-        <svg class="task-icon" width="24" height="24">
-          <circle cx="12" cy="12" r="9" stroke="${lcolour}" fill="${lcolour}" fill-opacity="0.4" stroke-width="2" />
-        </svg>
-        <div class="task-summary">${ptask[TASK_SUMMARY]}</div>
-      </div>
+      <li class="li-priority${ptask[TASK_PRIORITY]}">
+        ${ptask[TASK_SUMMARY]}
+      </li>
     `;
   }
 
@@ -268,22 +264,21 @@ export class TodoistCard extends LitElement {
         height: 100%;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-      }
-      .card-content {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-      .card-content .row-task {
-        display: flex;
-        flex-direction: row;
         justify-content: flex-start;
       }
       .card-header {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        padding-top: 0px;
+        line-height: 36px;
+      }
+      .card-header .divider {
+        width: 100%;
+        border: 0;
+        height: 1.5px;
+        margin-top: 10px;
+        margin-bottom: 0px;
       }
       .card-header .name {
         display: flex;
@@ -297,11 +292,69 @@ export class TodoistCard extends LitElement {
       .card-header .parent-summary {
         font-size: 14px;
         color: var(--secondary-text-color);
+        line-height: 18px;
+        margin-top: -5px;
+        text-align: right;
       }
-      .divider {
-        width: 100%;
-        border: 0;
-        height: 1.5px;
+      .card-content {
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 0px;
+        justify-content: flex-start;
+        list-style: none;
+        padding-left: 0em;
+      }
+      .card-content .li-priority1 {
+        border-bottom: 1px var(--mdc-radio-disabled-color) solid;
+      }
+      .card-content .li-priority1::before {
+        content: '';
+        display: inline-block;
+        height: 1em;
+        width: 1em;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' stroke-width='2' stroke='%23808080' fill='%23808080'  fill-opacity='0.4'/></svg>");
+        background-size: contain;
+        background-repeat: no-repeat;
+        margin-right: 0.5em;
+      }
+      .card-content .li-priority2 {
+        border-bottom: 1px var(--mdc-radio-disabled-color) solid;
+      }
+      .card-content .li-priority2::before {
+        content: '';
+        display: inline-block;
+        height: 1em;
+        width: 1em;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' stroke-width='2' stroke='%235297ff' fill='%235297ff'  fill-opacity='0.4'/></svg>");
+        background-size: contain;
+        background-repeat: no-repeat;
+        margin-right: 0.5em;
+      }
+      .card-content .li-priority3 {
+        border-bottom: 1px var(--mdc-radio-disabled-color) solid;
+      }
+      .card-content .li-priority3::before {
+        content: '';
+        display: inline-block;
+        height: 1em;
+        width: 1em;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' stroke-width='2' stroke='%23ff9a14' fill='%23ff9a14'  fill-opacity='0.4'/></svg>");
+        background-size: contain;
+        background-repeat: no-repeat;
+        margin-right: 0.5em;
+      }
+      .card-content .li-priority4 {
+        border-bottom: 1px var(--mdc-radio-disabled-color) solid;
+      }
+      .card-content .li-priority4::before {
+        content: '';
+        display: inline-block;
+        height: 1em;
+        width: 1em;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' stroke-width='2' stroke='%23ff7066' fill='%23ff7066'  fill-opacity='0.4'/></svg>");
+        background-size: contain;
+        background-repeat: no-repeat;
+        margin-right: 0.5em;
       }
     `;
   }
