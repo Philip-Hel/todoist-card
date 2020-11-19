@@ -7,3 +7,6 @@ export const PARENT_SUMMARY = 'parent_summary';
 export const PROJECT_TASKS = 'all_tasks';
 export const TASK_SUMMARY = 'summary';
 export const TASK_PRIORITY = 'priority';
+//export const TASK_ID = 'id';
+export const TASK_PARENT_ID = 'parent_id';
+export const TASK_END_DATETIME = 'end';

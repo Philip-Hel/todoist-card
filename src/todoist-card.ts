@@ -23,6 +23,8 @@ import {
   PROJECT_TASKS,
   TASK_SUMMARY,
   TASK_PRIORITY,
+  TASK_END_DATETIME,
+  TASK_PARENT_ID,
 } from './const';
 
 import { localize } from './localize/localize';
@@ -70,6 +72,8 @@ export class TodoistCard extends LitElement {
       icon: DEFAULT_ICON,
       ...config,
     };
+    //call api to update platform
+    // this.hass.callApi<any>('GET', `calendars/${config.entity}`);
   }
 
   protected shouldUpdate(changedProps: PropertyValues): boolean {
@@ -243,21 +247,120 @@ export class TodoistCard extends LitElement {
 
   private rendercontent(stateObj: HassEntity): TemplateResult {
     const tasks = stateObj.attributes[PROJECT_TASKS];
+    const indentData: { baseIndent: number; currentIndent: number; indentQueue: string[] } = {
+      baseIndent: 1,
+      currentIndent: 1,
+      indentQueue: [],
+    };
     return html`
       <ul class="card-content">
-        ${tasks!.map(task => this.rendertask(task))}
+        ${tasks!.map(task => this.rendertask(task, indentData))}
       </ul>
     `;
   }
 
-  private rendertask(ptask): TemplateResult {
+  private rendertask(
+    ptask,
+    pindentData: { baseIndent: number; currentIndent: number; indentQueue: string[] },
+  ): TemplateResult {
+    //if queue is greater than 0 then check if we need to go up or down or stay the same, if 0 check if we need to go up else do nothing
+    if (pindentData.indentQueue.length > 0) {
+      //console.log('point1 - queue not empty length', [pindentData.indentQueue.length]);
+      if (ptask[TASK_PARENT_ID]) {
+        const found = pindentData.indentQueue.indexOf(ptask[TASK_PARENT_ID]);
+        //check if parent_id is currently in the queue
+        /* console.log('point2 current task has parent id (pindent, found, summary, parent id', [
+          pindentData.currentIndent,
+          found,
+          ptask[TASK_SUMMARY],
+          ptask[TASK_PARENT_ID],
+        ]); */
+        if (found == -1) {
+          /* console.log('point3 task not in queue, so go deeper (pindent, found ,summary, parent id', [
+            pindentData.currentIndent,
+            found,
+            ptask[TASK_SUMMARY],
+            ptask[TASK_PARENT_ID],
+          ]); */
+          pindentData.indentQueue.push(ptask[TASK_PARENT_ID]);
+          pindentData.currentIndent += 1;
+          /*  console.log('point3 - after update, so go deeper (pindent, found ,summary, parent id', [
+            pindentData.currentIndent,
+            found,
+            ptask[TASK_SUMMARY],
+            ptask[TASK_PARENT_ID],
+          ]); */
+        } else if (found != pindentData.indentQueue.length - 1) {
+          //we could be going back multiple levels so check how many times to indent left
+          /* console.log(
+            'point4 if parent_id is not in last position in queue, go shallow (pindent, found, queuelength,summary, parent id',
+            [
+              pindentData.currentIndent,
+              found,
+              pindentData.indentQueue.length,
+              ptask[TASK_SUMMARY],
+              ptask[TASK_PARENT_ID],
+            ],
+          ); */
+          while (found != pindentData.indentQueue.length - 1) {
+            pindentData.indentQueue.pop();
+            pindentData.currentIndent -= 1;
+          }
+          /* console.log(
+            'point4 - after if parent_id is not in last position in queue, go shallow (pindent, found, queuelength,summary, parent id',
+            [
+              pindentData.currentIndent,
+              found,
+              pindentData.indentQueue.length,
+              ptask[TASK_SUMMARY],
+              ptask[TASK_PARENT_ID],
+            ],
+          ); */
+        }
+      } else {
+        // no Parent_id found so decrease indent to base level
+        /* console.log('point5 no parent id so go back to base - before (pindent, tasksummary, queue length)', [
+          pindentData.currentIndent,
+          ptask[TASK_SUMMARY],
+          pindentData.indentQueue.length,
+        ]); */
+        pindentData.indentQueue = [];
+        pindentData.currentIndent = pindentData.baseIndent;
+        /* console.log('point5 no parent id so go back to base - after (pindent, tasksummary, queue length)', [
+          pindentData.currentIndent,
+          ptask[TASK_SUMMARY],
+          pindentData.indentQueue.length,
+        ]); */
+      }
+    } else if (ptask[TASK_PARENT_ID]) {
+      //queue is empty so if parent_id exist push it and increase indent
+      /* console.log('point6 - main else if - before (pindent, summary, queue length', [
+        pindentData.currentIndent,
+        ptask[TASK_SUMMARY],
+        pindentData.indentQueue.length,
+      ]); */
+      pindentData.indentQueue.push(ptask[TASK_PARENT_ID]);
+      pindentData.currentIndent += 1;
+      /* console.log('point6 - main else if- after', [
+        pindentData.currentIndent,
+        ptask[TASK_SUMMARY],
+        pindentData.indentQueue.length,
+      ]); */
+    }
     return html`
-      <li class="li-priority${ptask[TASK_PRIORITY]}">
-        ${ptask[TASK_SUMMARY]}
+      <li class="li-priority${ptask[TASK_PRIORITY]}" style="margin-left:${pindentData.currentIndent * 20}px">
+        ${ptask[TASK_SUMMARY]} ${this.renderDueDate(ptask)}
       </li>
     `;
   }
 
+  private renderDueDate(ptask): TemplateResult {
+    if (!ptask[TASK_END_DATETIME] || ptask[TASK_END_DATETIME] == null) return html``;
+
+    return html`
+      ${ptask[TASK_END_DATETIME]}
+    `;
+  }
   static get styles(): CSSResult {
     return css`
       ha-card {
@@ -268,16 +371,17 @@ export class TodoistCard extends LitElement {
       }
       .card-header {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         justify-content: space-between;
         padding-top: 0px;
         line-height: 36px;
+        flex-wrap: wrap;
       }
       .card-header .divider {
         width: 100%;
         border: 0;
-        height: 1.5px;
-        margin-top: 10px;
+        height: 1px;
+        margin-top: 5px;
         margin-bottom: 0px;
       }
       .card-header .name {
@@ -293,8 +397,7 @@ export class TodoistCard extends LitElement {
         font-size: 14px;
         color: var(--secondary-text-color);
         line-height: 18px;
-        margin-top: -5px;
-        text-align: right;
+        margin-block: auto;
       }
       .card-content {
         display: flex;
