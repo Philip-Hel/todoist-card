@@ -3,4 +3,4 @@ Warning work in progress.
 also needed to make changes to the core todoist integration to send additional information.
 
 example card:
-https://github.com/Philip-Hel/todoist-card/blob/master/example.PNG
+![Screenshot](example.PNG)
