@@ -83,6 +83,14 @@ export class TodoistCardEditor extends LitElement implements LovelaceCardEditor 
     return '';
   }
 
+  get _list_height(): string {
+    if (this._config) {
+      return this._config.list_height || '';
+    }
+
+    return '';
+  }
+
   get _entity(): string {
     if (this._config) {
       return this._config.entity || '';
@@ -245,6 +253,12 @@ export class TodoistCardEditor extends LitElement implements LovelaceCardEditor 
                   label="Icon mdi:something)"
                   .value=${this._icon}
                   .configValue=${'icon'}
+                  @value-changed=${this._valueChanged}
+                ></paper-input>
+                <paper-input
+                  label="list max height (optional)"
+                  .value=${this._list_height}
+                  .configValue=${'list_height'}
                   @value-changed=${this._valueChanged}
                 ></paper-input>
                 <br />

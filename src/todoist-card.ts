@@ -257,6 +257,13 @@ export class TodoistCard extends LitElement {
       currentIndent: 1,
       indentQueue: [],
     };
+    if (this.config.list_height) {
+      return html`
+        <ul class="card-content" style="height:${this.config.list_height}; overflow:hidden; overflow-y:scroll;">
+          ${tasks!.map(task => this.rendertask(task, indentData))}
+        </ul>
+      `;
+    }
     return html`
       <ul class="card-content">
         ${tasks!.map(task => this.rendertask(task, indentData))}
@@ -297,7 +304,7 @@ export class TodoistCard extends LitElement {
       <li class="li-priority" style="margin-left:${pindentData.currentIndent * 20}px">
         <div class="task-row">
           <span>
-            <svg width="18px" height="18px" viewBox="0 0 24 24">
+            <svg class="li-bullet" width="16px" height="18px" viewBox="0 0 24 24">
               <circle
                 cx="12"
                 cy="12"
@@ -399,8 +406,27 @@ export class TodoistCard extends LitElement {
         list-style: none;
         padding-left: 0em;
       }
+
+      /* Scroll 2 */
+      .card-content::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      .card-content::-webkit-scrollbar-track {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+      .card-content::-webkit-scrollbar-thumb {
+        background-color: #11171a;
+        border-radius: 10px;
+      }
+
       .card-content .li-priority {
         border-bottom: 1px var(--mdc-radio-disabled-color) solid;
+      }
+
+      .card-content .li-priority .li-bullet {
+        vertical-align: middle;
       }
       /*   .card-content .li-priority1::before {
         content: '';
