@@ -23,8 +23,13 @@ import {
   PROJECT_TASKS,
   TASK_SUMMARY,
   TASK_PRIORITY,
-  TASK_END_DATETIME,
   TASK_PARENT_ID,
+  TASK_DUE_TODAY,
+  TASK_DUE_TOMORROW,
+  TASK_DUE_FORMATTED,
+  TASK_OVERDUE,
+  TASK_NEXT7DAYS,
+  TASK_RECURRENCE,
 } from './const';
 
 import { localize } from './localize/localize';
@@ -90,7 +95,7 @@ export class TodoistCard extends LitElement {
     }
 
     const stateObj = this.hass.states[this.config.entity!];
-    console.log(stateObj.attributes);
+    /* console.log(stateObj.attributes); */
     if (!stateObj) {
       this.showWarning(localize('Entity not found'));
     }
@@ -265,100 +270,87 @@ export class TodoistCard extends LitElement {
   ): TemplateResult {
     //if queue is greater than 0 then check if we need to go up or down or stay the same, if 0 check if we need to go up else do nothing
     if (pindentData.indentQueue.length > 0) {
-      //console.log('point1 - queue not empty length', [pindentData.indentQueue.length]);
       if (ptask[TASK_PARENT_ID]) {
         const found = pindentData.indentQueue.indexOf(ptask[TASK_PARENT_ID]);
         //check if parent_id is currently in the queue
-        /* console.log('point2 current task has parent id (pindent, found, summary, parent id', [
-          pindentData.currentIndent,
-          found,
-          ptask[TASK_SUMMARY],
-          ptask[TASK_PARENT_ID],
-        ]); */
         if (found == -1) {
-          /* console.log('point3 task not in queue, so go deeper (pindent, found ,summary, parent id', [
-            pindentData.currentIndent,
-            found,
-            ptask[TASK_SUMMARY],
-            ptask[TASK_PARENT_ID],
-          ]); */
           pindentData.indentQueue.push(ptask[TASK_PARENT_ID]);
           pindentData.currentIndent += 1;
-          /*  console.log('point3 - after update, so go deeper (pindent, found ,summary, parent id', [
-            pindentData.currentIndent,
-            found,
-            ptask[TASK_SUMMARY],
-            ptask[TASK_PARENT_ID],
-          ]); */
         } else if (found != pindentData.indentQueue.length - 1) {
           //we could be going back multiple levels so check how many times to indent left
-          /* console.log(
-            'point4 if parent_id is not in last position in queue, go shallow (pindent, found, queuelength,summary, parent id',
-            [
-              pindentData.currentIndent,
-              found,
-              pindentData.indentQueue.length,
-              ptask[TASK_SUMMARY],
-              ptask[TASK_PARENT_ID],
-            ],
-          ); */
           while (found != pindentData.indentQueue.length - 1) {
             pindentData.indentQueue.pop();
             pindentData.currentIndent -= 1;
           }
-          /* console.log(
-            'point4 - after if parent_id is not in last position in queue, go shallow (pindent, found, queuelength,summary, parent id',
-            [
-              pindentData.currentIndent,
-              found,
-              pindentData.indentQueue.length,
-              ptask[TASK_SUMMARY],
-              ptask[TASK_PARENT_ID],
-            ],
-          ); */
         }
       } else {
         // no Parent_id found so decrease indent to base level
-        /* console.log('point5 no parent id so go back to base - before (pindent, tasksummary, queue length)', [
-          pindentData.currentIndent,
-          ptask[TASK_SUMMARY],
-          pindentData.indentQueue.length,
-        ]); */
         pindentData.indentQueue = [];
         pindentData.currentIndent = pindentData.baseIndent;
-        /* console.log('point5 no parent id so go back to base - after (pindent, tasksummary, queue length)', [
-          pindentData.currentIndent,
-          ptask[TASK_SUMMARY],
-          pindentData.indentQueue.length,
-        ]); */
       }
     } else if (ptask[TASK_PARENT_ID]) {
       //queue is empty so if parent_id exist push it and increase indent
-      /* console.log('point6 - main else if - before (pindent, summary, queue length', [
-        pindentData.currentIndent,
-        ptask[TASK_SUMMARY],
-        pindentData.indentQueue.length,
-      ]); */
       pindentData.indentQueue.push(ptask[TASK_PARENT_ID]);
       pindentData.currentIndent += 1;
-      /* console.log('point6 - main else if- after', [
-        pindentData.currentIndent,
-        ptask[TASK_SUMMARY],
-        pindentData.indentQueue.length,
-      ]); */
     }
     return html`
-      <li class="li-priority${ptask[TASK_PRIORITY]}" style="margin-left:${pindentData.currentIndent * 20}px">
-        ${ptask[TASK_SUMMARY]} ${this.renderDueDate(ptask)}
+      <li class="li-priority" style="margin-left:${pindentData.currentIndent * 20}px">
+        <div class="task-row">
+          <span>
+            <svg width="18px" height="18px" viewBox="0 0 24 24">
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke-width="2"
+                stroke=${this.convertcolour(ptask[TASK_PRIORITY])}
+                fill=${this.convertcolour(ptask[TASK_PRIORITY])}
+                fill-opacity="0.4"
+              />
+            </svg>
+            ${ptask[TASK_SUMMARY]}
+          </span>
+          ${this.renderDueDate(ptask)}
+        </div>
       </li>
     `;
   }
 
   private renderDueDate(ptask): TemplateResult {
-    if (!ptask[TASK_END_DATETIME] || ptask[TASK_END_DATETIME] == null) return html``;
-
+    if (!ptask[TASK_DUE_FORMATTED] || ptask[TASK_DUE_FORMATTED] == null) return html``;
+    let classid = '';
+    if (ptask[TASK_OVERDUE]) classid = 'due-overdue';
+    else if (ptask[TASK_DUE_TODAY]) classid = 'due-today';
+    else if (ptask[TASK_DUE_TOMORROW]) classid = 'due-tomorrow';
+    else if (ptask[TASK_NEXT7DAYS]) classid = 'due-next7days';
+    else classid = 'due-default';
     return html`
-      ${ptask[TASK_END_DATETIME]}
+      <div class="${classid}">
+        ${this.renderCalendarIcon()}<span> ${ptask[TASK_DUE_FORMATTED]} </span>${ptask[TASK_RECURRENCE]
+          ? this.renderRecurringIcon()
+          : ''}
+      </div>
+    `;
+  }
+  private renderCalendarIcon(): TemplateResult {
+    return html`
+      <svg width="12" height="12" viewBox="0 0 12 12" class="calendar_icon">
+        <path
+          fill="currentColor"
+          fill-rule="nonzero"
+          d="M9.5 1A1.5 1.5 0 0 1 11 2.5v7A1.5 1.5 0 0 1 9.5 11h-7A1.5 1.5 0 0 1 1 9.5v-7A1.5 1.5 0 0 1 2.5 1h7zm0 1h-7a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5zM8 7.25a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5zM8.5 4a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1h5z"
+        ></path>
+      </svg>
+    `;
+  }
+  private renderRecurringIcon(): TemplateResult {
+    return html`
+      <svg width="12" height="12" viewBox="0 0 12 12" class="recurring_icon">
+        <path
+          fill="currentColor"
+          d="M2.784 4.589l.07.057 1.5 1.5a.5.5 0 01-.638.765l-.07-.057L3 6.207V7a2 2 0 001.85 1.995L5 9h2.5a.5.5 0 01.09.992L7.5 10H5a3 3 0 01-2.995-2.824L2 7v-.793l-.646.647a.5.5 0 01-.638.057l-.07-.057a.5.5 0 01-.057-.638l.057-.07 1.5-1.5a.5.5 0 01.638-.057zM7 2a3 3 0 013 3v.792l.646-.646a.5.5 0 01.765.638l-.057.07-1.5 1.5a.5.5 0 01-.638.057l-.07-.057-1.5-1.5a.5.5 0 01.638-.765l.07.057.646.646V5a2 2 0 00-1.85-1.995L7 3H4.5a.5.5 0 010-1z"
+        ></path>
+      </svg>
     `;
   }
   static get styles(): CSSResult {
@@ -373,7 +365,7 @@ export class TodoistCard extends LitElement {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        padding-top: 0px;
+        padding-top: 6px;
         line-height: 36px;
         flex-wrap: wrap;
       }
@@ -407,10 +399,10 @@ export class TodoistCard extends LitElement {
         list-style: none;
         padding-left: 0em;
       }
-      .card-content .li-priority1 {
+      .card-content .li-priority {
         border-bottom: 1px var(--mdc-radio-disabled-color) solid;
       }
-      .card-content .li-priority1::before {
+      /*   .card-content .li-priority1::before {
         content: '';
         display: inline-block;
         height: 1em;
@@ -458,6 +450,27 @@ export class TodoistCard extends LitElement {
         background-size: contain;
         background-repeat: no-repeat;
         margin-right: 0.5em;
+      } */
+      .card-content .task-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .card-content .due-overdue {
+        color: #ff7066;
+      }
+      .card-content .due-today {
+        color: #25b84c;
+      }
+      .card-content .due-tomorrow {
+        color: #ff9a14;
+      }
+      .card-content .due-next7days {
+        color: #a970ff;
+      }
+      .card-content .due-default {
+        color: hsla(0, 0%, 100%, 0.6);
       }
     `;
   }
