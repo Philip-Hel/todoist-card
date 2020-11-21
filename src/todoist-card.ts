@@ -485,18 +485,23 @@ export class TodoistCard extends LitElement {
       }
       .card-content .due-overdue {
         color: #ff7066;
+        font-size: 12px;
       }
       .card-content .due-today {
         color: #25b84c;
+        font-size: 12px;
       }
       .card-content .due-tomorrow {
         color: #ff9a14;
+        font-size: 12px;
       }
       .card-content .due-next7days {
         color: #a970ff;
+        font-size: 12px;
       }
       .card-content .due-default {
         color: hsla(0, 0%, 100%, 0.6);
+        font-size: 12px;
       }
     `;
   }
