@@ -19,4 +19,10 @@ export interface TodoistCardConfig extends LovelaceCardConfig {
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
   list_height: string;
+  custom_heights?: ListHeightobject[];
+}
+
+export interface ListHeightobject {
+  list_height: string;
+  name: string;
 }

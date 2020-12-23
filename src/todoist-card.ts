@@ -14,6 +14,7 @@ import {
 import './editor';
 
 import { TodoistCardConfig } from './types';
+//import { ListHeightobject } from './types';
 /*import { actionHandler } from './action-handler-directive';*/
 import {
   CARD_VERSION,
@@ -72,7 +73,6 @@ export class TodoistCard extends LitElement {
     if (config.test_gui) {
       getLovelace().setEditMode(true);
     }
-
     this.config = {
       icon: DEFAULT_ICON,
       ...config,
@@ -257,6 +257,19 @@ export class TodoistCard extends LitElement {
       currentIndent: 1,
       indentQueue: [],
     };
+    if (this.config.custom_heights) {
+      for (let i = 0; i < this.config.custom_heights.length; i++) {
+        if (this.config.custom_heights[i].name == this.config.entity)
+          return html`
+            <ul
+              class="card-content"
+              style="height:${this.config.custom_heights[i].list_height}; overflow:hidden; overflow-y:scroll;"
+            >
+              ${tasks!.map(task => this.rendertask(task, indentData))}
+            </ul>
+          `;
+      }
+    }
     if (this.config.list_height) {
       return html`
         <ul class="card-content" style="height:${this.config.list_height}; overflow:hidden; overflow-y:scroll;">
